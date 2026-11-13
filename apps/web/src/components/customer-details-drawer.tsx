@@ -60,10 +60,6 @@ export function CustomerDetailsDrawer({
             <div className="details-row"><span>Last active</span><strong>{lastActive}</strong></div>
             <div className="details-row"><span>Reply mode</span><strong>{automationPaused ? "Paused" : replyMode}</strong></div>
           </div>
-          <div className="details-block">
-            <h3>Order overview</h3>
-            <div className="details-row"><span>Linked orders</span><strong>None yet</strong></div>
-          </div>
           <div className="details-note"><ShieldCheck size={15} /> The seller stays in control while automatic replies are paused.</div>
         </div>
       </DrawerContent>
