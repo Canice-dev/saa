@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Geist } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
 
 export const metadata: Metadata = {
   title: "Sales Assistant | Business workspace",
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-NG" className={cn("h-full antialiased", "font-sans", geist.variable)}>
+    <html lang="en-NG" data-scroll-behavior="smooth" className={cn("h-full antialiased", "font-sans", manrope.variable)}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

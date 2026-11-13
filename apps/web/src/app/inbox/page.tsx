@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   CheckCheck,
-  Clock3,
   FileText,
   Info,
   MessageSquareText,
@@ -10,6 +9,7 @@ import {
 } from "lucide-react";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { connection } from "next/server";
+import Link from "next/link";
 import { MobileWorkspaceBar, WorkspaceSidebar } from "@/components/workspace-sidebar";
 import { getDatabase } from "@/lib/db/client";
 import { conversations, customers, messages } from "@/lib/db/schema";
@@ -136,15 +136,10 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
       <WorkspaceSidebar active="inbox" />
       <section className="main-panel">
         <MobileWorkspaceBar title="Inbox" />
-        <header className="topbar">
-          <div className="breadcrumbs"><a href="/">Workspace</a><span className="breadcrumb-separator">/</span><strong>Inbox</strong></div>
-          <div className="topbar-right"><span className="environment-pill"><span className="status-dot status-dot--amber" /> Setup mode</span><span className="topbar-avatar" aria-label="Owner account">O</span></div>
-        </header>
-
         <div className="page-content inbox-page-content">
           <section className="welcome-row inbox-welcome">
             <div><p className="date-kicker">Customer messages</p><h1>Inbox<span className="heading-period">.</span></h1><p className="welcome-subtitle">Review conversations and keep your team in control.</p></div>
-            <a className="secondary-button" href="/inbox">Refresh inbox<ArrowRight size={14} /></a>
+            <Link className="secondary-button" href="/inbox">Refresh inbox<ArrowRight size={14} /></Link>
           </section>
 
           {inboxError ? (
@@ -160,14 +155,14 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                     {inboxItems.map((item) => {
                       const selected = activeConversation?.id === item.id;
                       return (
-                        <a className={`conversation-item${selected ? " conversation-item--selected" : ""}`} href={`/inbox?conversation=${encodeURIComponent(item.id)}`} key={item.id} aria-current={selected ? "page" : undefined}>
+                        <Link className={`conversation-item${selected ? " conversation-item--selected" : ""}`} href={`/inbox?conversation=${encodeURIComponent(item.id)}`} key={item.id} aria-current={selected ? "page" : undefined}>
                           <span className="customer-avatar" aria-hidden="true">{initials(item.customerName, item.externalUserId)}</span>
                           <span className="conversation-item-copy">
                             <span className="conversation-item-top"><strong>{item.customerName || item.externalUserId}</strong><time>{formatTime(item.lastMessageAt ?? item.updatedAt, true)}</time></span>
                             <span className="conversation-item-preview">{previewText(item.lastMessageBody, item.lastMessageType)}</span>
                             <span className="conversation-item-meta">{item.channel === "whatsapp" ? "WhatsApp" : item.channel} · {item.automationPaused ? "Paused" : item.state}</span>
                           </span>
-                        </a>
+                        </Link>
                       );
                     })}
                   </div>

@@ -1,6 +1,5 @@
 import {
   ArrowRight,
-  Bell,
   BookOpenText,
   Check,
   CircleHelp,
@@ -10,6 +9,7 @@ import {
   ShieldCheck,
   ShoppingBag,
 } from "lucide-react";
+import Link from "next/link";
 import { MobileWorkspaceBar, WorkspaceSidebar } from "@/components/workspace-sidebar";
 
 const setupSteps = [
@@ -21,7 +21,7 @@ const setupSteps = [
 
 const metrics = [
   { label: "Conversations", value: "—", note: "Available after channel connection", icon: MessageSquareText, tone: "blue" },
-  { label: "Needs your attention", value: "—", note: "Questions waiting for review", icon: CircleHelp, tone: "orange" },
+  { label: "Needs your attention", value: "—", note: "Questions waiting for review", icon: CircleHelp, tone: "gray" },
   { label: "Orders in review", value: "—", note: "Drafts awaiting your approval", icon: ShoppingBag, tone: "purple" },
   { label: "Setup complete", value: "0 of 4", note: "Get ready to assist customers", icon: Check, tone: "green" },
 ];
@@ -32,15 +32,6 @@ export default function Home() {
       <WorkspaceSidebar active="overview" />
       <section className="main-panel">
         <MobileWorkspaceBar title="Overview" />
-        <header className="topbar">
-          <div className="breadcrumbs"><span>Workspace</span><span className="breadcrumb-separator">/</span><strong>Overview</strong></div>
-          <div className="topbar-right">
-            <span className="environment-pill"><span className="status-dot status-dot--amber" /> Setup mode</span>
-            <span className="icon-button" aria-hidden="true"><Bell size={16} /></span>
-            <span className="topbar-avatar" aria-label="Owner account">O</span>
-          </div>
-        </header>
-
         <div className="page-content">
           <section className="welcome-row">
             <div>
@@ -48,7 +39,7 @@ export default function Home() {
               <h1>Overview<span className="heading-period">.</span></h1>
               <p className="welcome-subtitle">Set up your assistant and keep every customer conversation in view.</p>
             </div>
-            <a className="primary-button" href="/inbox"><MessageSquareText size={16} /> Open inbox<ArrowRight size={15} /></a>
+            <Link className="primary-button" href="/inbox"><MessageSquareText size={16} /> Open inbox<ArrowRight size={15} /></Link>
           </section>
 
           <section className="status-banner" aria-label="Assistant status">
@@ -57,7 +48,7 @@ export default function Home() {
               <div className="status-title-row"><h2>Automatic replies are paused</h2><span className="status-tag">Setup mode</span></div>
               <p>Customer messages can reach your inbox while you connect a channel and test seller handoff.</p>
             </div>
-            <a className="text-link" href="/inbox">Review inbox<ArrowRight size={14} /></a>
+              <Link className="text-link" href="/inbox">Review inbox<ArrowRight size={14} /></Link>
           </section>
 
           <section className="metrics-grid" aria-label="Workspace summary">
@@ -83,7 +74,7 @@ export default function Home() {
                     <span className="step-number">{index + 1}</span>
                     <span className="step-copy"><strong>{title}</strong><small>{detail}</small></span>
                     <Icon className="step-icon" size={16} strokeWidth={1.8} aria-hidden="true" />
-                    {index === 0 && <a className="step-link" href="/inbox" aria-label="Review inbox for channel setup"><ArrowRight size={15} /></a>}
+                    {index === 0 && <Link className="step-link" href="/inbox" aria-label="Review inbox for channel setup"><ArrowRight size={15} /></Link>}
                   </li>
                 ))}
               </ol>
