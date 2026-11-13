@@ -1,0 +1,1871 @@
+{
+  "type": "base",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "3e8bd7bc-8b36-4147-9873-706de7ee84ae",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "business_settings"
+      ],
+      "writes": [
+        "s|tbl|public.business_settings",
+        "n|tbl|public.business_settings",
+        "e|tbl|public.business_settings",
+        "n|rel|public.business_settings",
+        "n|type|public.business_settings",
+        "n|rel|public.business_settings_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "businesses"
+      ],
+      "writes": [
+        "s|tbl|public.businesses",
+        "n|tbl|public.businesses",
+        "e|tbl|public.businesses",
+        "n|rel|public.businesses",
+        "n|type|public.businesses",
+        "n|rel|public.businesses_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "channel_connections"
+      ],
+      "writes": [
+        "s|tbl|public.channel_connections",
+        "n|tbl|public.channel_connections",
+        "e|tbl|public.channel_connections",
+        "n|rel|public.channel_connections",
+        "n|type|public.channel_connections",
+        "n|rel|public.channel_connections_pkey",
+        "n|rel|public.channel_connections_business_id_channel_provider_account_id_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "conversations"
+      ],
+      "writes": [
+        "s|tbl|public.conversations",
+        "n|tbl|public.conversations",
+        "e|tbl|public.conversations",
+        "n|rel|public.conversations",
+        "n|type|public.conversations",
+        "n|rel|public.conversations_pkey",
+        "n|rel|public.conversations_business_id_channel_customer_id_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "customers"
+      ],
+      "writes": [
+        "s|tbl|public.customers",
+        "n|tbl|public.customers",
+        "e|tbl|public.customers",
+        "n|rel|public.customers",
+        "n|type|public.customers",
+        "n|rel|public.customers_pkey",
+        "n|rel|public.customers_business_id_channel_external_user_id_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "messages"
+      ],
+      "writes": [
+        "s|tbl|public.messages",
+        "n|tbl|public.messages",
+        "e|tbl|public.messages",
+        "n|rel|public.messages",
+        "n|type|public.messages",
+        "n|rel|public.messages_pkey",
+        "n|rel|public.messages_provider_provider_message_id_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "outbox_events"
+      ],
+      "writes": [
+        "s|tbl|public.outbox_events",
+        "n|tbl|public.outbox_events",
+        "e|tbl|public.outbox_events",
+        "n|rel|public.outbox_events",
+        "n|type|public.outbox_events",
+        "n|rel|public.outbox_events_pkey",
+        "n|rel|public.outbox_events_dedupe_key_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "provider_events"
+      ],
+      "writes": [
+        "s|tbl|public.provider_events",
+        "n|tbl|public.provider_events",
+        "e|tbl|public.provider_events",
+        "n|rel|public.provider_events",
+        "n|type|public.provider_events",
+        "n|rel|public.provider_events_pkey",
+        "n|rel|public.provider_events_provider_event_key_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "schema_migrations"
+      ],
+      "writes": [
+        "s|tbl|public.schema_migrations",
+        "n|tbl|public.schema_migrations",
+        "e|tbl|public.schema_migrations",
+        "n|rel|public.schema_migrations",
+        "n|type|public.schema_migrations",
+        "n|rel|public.schema_migrations_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "messages",
+        "messages_conversation_timeline_idx"
+      ],
+      "writes": [
+        "s|idx|public.messages_conversation_timeline_idx",
+        "n|idx|public.messages_conversation_timeline_idx",
+        "e|idx|public.messages_conversation_timeline_idx",
+        "n|rel|public.messages_conversation_timeline_idx"
+      ],
+      "reads": [
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|col|public.messages.conversation_id",
+        "n|col|public.messages.received_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "outbox_events",
+        "outbox_pending_idx"
+      ],
+      "writes": [
+        "s|idx|public.outbox_pending_idx",
+        "n|idx|public.outbox_pending_idx",
+        "e|idx|public.outbox_pending_idx",
+        "n|rel|public.outbox_pending_idx"
+      ],
+      "reads": [
+        "n|tbl|public.outbox_events",
+        "n|sch|public",
+        "n|col|public.outbox_events.available_at",
+        "n|col|public.outbox_events.created_at"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "business_settings"
+      ],
+      "writes": [
+        "s|fk|public.business_settings.business_settings_business_id_fkey",
+        "n|fk|public.business_settings.business_settings_business_id_fkey",
+        "e|fk|public.business_settings.business_settings_business_id_fkey",
+        "n|con|public.business_settings.business_settings_business_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.business_settings",
+        "n|sch|public",
+        "n|tbl|public.businesses",
+        "n|sch|public",
+        "n|col|public.business_settings.business_id",
+        "n|col|public.businesses.id",
+        "e|uniqueness|public.businesses.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "channel_connections"
+      ],
+      "writes": [
+        "s|fk|public.channel_connections.channel_connections_business_id_fkey",
+        "n|fk|public.channel_connections.channel_connections_business_id_fkey",
+        "e|fk|public.channel_connections.channel_connections_business_id_fkey",
+        "n|con|public.channel_connections.channel_connections_business_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.channel_connections",
+        "n|sch|public",
+        "n|tbl|public.businesses",
+        "n|sch|public",
+        "n|col|public.channel_connections.business_id",
+        "n|col|public.businesses.id",
+        "e|uniqueness|public.businesses.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "customers"
+      ],
+      "writes": [
+        "s|fk|public.customers.customers_business_id_fkey",
+        "n|fk|public.customers.customers_business_id_fkey",
+        "e|fk|public.customers.customers_business_id_fkey",
+        "n|con|public.customers.customers_business_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.customers",
+        "n|sch|public",
+        "n|tbl|public.businesses",
+        "n|sch|public",
+        "n|col|public.customers.business_id",
+        "n|col|public.businesses.id",
+        "e|uniqueness|public.businesses.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "conversations"
+      ],
+      "writes": [
+        "s|fk|public.conversations.conversations_business_id_fkey",
+        "n|fk|public.conversations.conversations_business_id_fkey",
+        "e|fk|public.conversations.conversations_business_id_fkey",
+        "n|con|public.conversations.conversations_business_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.conversations",
+        "n|sch|public",
+        "n|tbl|public.businesses",
+        "n|sch|public",
+        "n|col|public.conversations.business_id",
+        "n|col|public.businesses.id",
+        "e|uniqueness|public.businesses.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "conversations"
+      ],
+      "writes": [
+        "s|fk|public.conversations.conversations_customer_id_fkey",
+        "n|fk|public.conversations.conversations_customer_id_fkey",
+        "e|fk|public.conversations.conversations_customer_id_fkey",
+        "n|con|public.conversations.conversations_customer_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.conversations",
+        "n|sch|public",
+        "n|tbl|public.customers",
+        "n|sch|public",
+        "n|col|public.conversations.customer_id",
+        "n|col|public.customers.id",
+        "e|uniqueness|public.customers.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "messages"
+      ],
+      "writes": [
+        "s|fk|public.messages.messages_conversation_id_fkey",
+        "n|fk|public.messages.messages_conversation_id_fkey",
+        "e|fk|public.messages.messages_conversation_id_fkey",
+        "n|con|public.messages.messages_conversation_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|tbl|public.conversations",
+        "n|sch|public",
+        "n|col|public.messages.conversation_id",
+        "n|col|public.conversations.id",
+        "e|uniqueness|public.conversations.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "outbox_events"
+      ],
+      "writes": [
+        "s|fk|public.outbox_events.outbox_events_business_id_fkey",
+        "n|fk|public.outbox_events.outbox_events_business_id_fkey",
+        "e|fk|public.outbox_events.outbox_events_business_id_fkey",
+        "n|con|public.outbox_events.outbox_events_business_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.outbox_events",
+        "n|sch|public",
+        "n|tbl|public.businesses",
+        "n|sch|public",
+        "n|col|public.outbox_events.business_id",
+        "n|col|public.businesses.id",
+        "e|uniqueness|public.businesses.id"
+      ]
+    }
+  ],
+  "ddl": [
+    {
+      "schema": "public",
+      "name": "business_settings",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "businesses",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "channel_connections",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "conversations",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "customers",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "messages",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "outbox_events",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "provider_events",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "schema_migrations",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "table": "business_settings",
+      "name": "business_id",
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "businesses",
+      "name": "id",
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "schema_migrations",
+      "name": "version",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "provider_events",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "business_id",
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "1",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "schema_migrations",
+      "name": "applied_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "businesses",
+      "name": "display_name",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'Your business'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "business_settings",
+      "name": "response_delay_seconds",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "60",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "business_id",
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "1",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "business_id",
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "1",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "business_id",
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "1",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "conversation_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "provider_events",
+      "name": "provider",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "event_type",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "business_settings",
+      "name": "confidence_threshold",
+      "type": "numeric(4,3)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'0.800'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "businesses",
+      "name": "locale",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'en-NG'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "channel",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "channel",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "provider",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "channel",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "provider_events",
+      "name": "event_key",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "businesses",
+      "name": "currency",
+      "type": "char(3)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'NGN'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "provider_events",
+      "name": "event_type",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "customer_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "provider_message_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "aggregate_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "external_user_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "provider_account_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "business_settings",
+      "name": "automation_enabled",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "businesses",
+      "name": "timezone",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'Africa/Lagos'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "business_settings",
+      "name": "fallback_message",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'I’m checking with the team and will get back to you.'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "dedupe_key",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "phone_number",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "provider_events",
+      "name": "provider_account_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "state",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'open'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "provider_phone_number_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "sender_role",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "display_name",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "display_name",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "automation_paused",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "businesses",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "direction",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "provider_events",
+      "name": "received_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "payload",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'{}'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "business_settings",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "response_generation",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "0",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "businesses",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "message_type",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "available_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "status",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'pending'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "provider_events",
+      "name": "processed_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "business_settings",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "last_customer_message_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "body",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "provider_events",
+      "name": "event_data",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'{}'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "status",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'pending'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "capabilities",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'{}'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "attempts",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "0",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "last_seller_message_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "last_health_check_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "provider_timestamp",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "received_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "delivery_status",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "processed_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "provider_error_code",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "messages_conversation_timeline_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null,
+          "isExpression": false,
+          "value": "conversation_id"
+        },
+        {
+          "asc": false,
+          "nullsFirst": true,
+          "opclass": null,
+          "isExpression": false,
+          "value": "received_at"
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "outbox_pending_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null,
+          "isExpression": false,
+          "value": "available_at"
+        },
+        {
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null,
+          "isExpression": false,
+          "value": "created_at"
+        }
+      ],
+      "isUnique": false,
+      "where": "(status = 'pending'::text)",
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "business_settings",
+      "name": "business_settings_business_id_fkey",
+      "nameExplicit": true,
+      "columns": [
+        "business_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "businesses",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "channel_connections_business_id_fkey",
+      "nameExplicit": true,
+      "columns": [
+        "business_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "businesses",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "customers_business_id_fkey",
+      "nameExplicit": true,
+      "columns": [
+        "business_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "businesses",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "conversations_business_id_fkey",
+      "nameExplicit": true,
+      "columns": [
+        "business_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "businesses",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "conversations_customer_id_fkey",
+      "nameExplicit": true,
+      "columns": [
+        "customer_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "customers",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "messages_conversation_id_fkey",
+      "nameExplicit": true,
+      "columns": [
+        "conversation_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "conversations",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "outbox_events_business_id_fkey",
+      "nameExplicit": true,
+      "columns": [
+        "business_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "businesses",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "schema_migrations",
+      "name": "schema_migrations_pkey",
+      "columns": [
+        "version"
+      ],
+      "nameExplicit": true,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "businesses",
+      "name": "businesses_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": true,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "business_settings",
+      "name": "business_settings_pkey",
+      "columns": [
+        "business_id"
+      ],
+      "nameExplicit": true,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "channel_connections_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": true,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "customers_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": true,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "conversations_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": true,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "messages_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": true,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "provider_events",
+      "name": "provider_events_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": true,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "outbox_events_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": true,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "channel_connections_business_id_channel_provider_account_id_key",
+      "nameExplicit": true,
+      "columns": [
+        "business_id",
+        "channel",
+        "provider_account_id"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "customers_business_id_channel_external_user_id_key",
+      "nameExplicit": true,
+      "columns": [
+        "business_id",
+        "channel",
+        "external_user_id"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "conversations_business_id_channel_customer_id_key",
+      "nameExplicit": true,
+      "columns": [
+        "business_id",
+        "channel",
+        "customer_id"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "messages_provider_provider_message_id_key",
+      "nameExplicit": true,
+      "columns": [
+        "provider",
+        "provider_message_id"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "provider_events",
+      "name": "provider_events_provider_event_key_key",
+      "nameExplicit": true,
+      "columns": [
+        "provider",
+        "event_key"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "outbox_events_dedupe_key_key",
+      "nameExplicit": true,
+      "columns": [
+        "dedupe_key"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "businesses",
+      "name": "businesses_id_check",
+      "value": "(id = 1)",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "business_settings",
+      "name": "business_settings_confidence_threshold_check",
+      "value": "((confidence_threshold >= (0)::numeric) AND (confidence_threshold <= (1)::numeric))",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "business_settings",
+      "name": "business_settings_response_delay_seconds_check",
+      "value": "((response_delay_seconds >= 0) AND (response_delay_seconds <= 3600))",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "channel_connections_channel_check",
+      "value": "(channel = ANY (ARRAY['whatsapp'::text, 'instagram'::text]))",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "channel_connections",
+      "name": "channel_connections_status_check",
+      "value": "(status = ANY (ARRAY['pending'::text, 'connected'::text, 'restricted'::text, 'disconnected'::text]))",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "customers",
+      "name": "customers_channel_check",
+      "value": "(channel = ANY (ARRAY['whatsapp'::text, 'instagram'::text]))",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "conversations_channel_check",
+      "value": "(channel = ANY (ARRAY['whatsapp'::text, 'instagram'::text]))",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "conversations",
+      "name": "conversations_state_check",
+      "value": "(state = ANY (ARRAY['open'::text, 'closed'::text]))",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "messages_delivery_status_check",
+      "value": "(delivery_status = ANY (ARRAY['accepted'::text, 'sent'::text, 'delivered'::text, 'read'::text, 'failed'::text]))",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "messages_direction_check",
+      "value": "(direction = ANY (ARRAY['inbound'::text, 'outbound'::text]))",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "messages",
+      "name": "messages_sender_role_check",
+      "value": "(sender_role = ANY (ARRAY['customer'::text, 'seller'::text, 'assistant'::text]))",
+      "entityType": "checks"
+    },
+    {
+      "schema": "public",
+      "table": "outbox_events",
+      "name": "outbox_events_status_check",
+      "value": "(status = ANY (ARRAY['pending'::text, 'processing'::text, 'completed'::text, 'failed'::text]))",
+      "entityType": "checks"
+    }
+  ]
+}
