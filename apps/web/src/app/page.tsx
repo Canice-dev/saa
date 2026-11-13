@@ -31,7 +31,11 @@ export default function Home() {
           <a className="nav-item nav-item--active" href="#overview" aria-current="page">
             <span className="nav-icon" aria-hidden="true">◫</span> Overview
           </a>
-          {sections.map((section) => (
+          {sections.map((section) => section === "Inbox" ? (
+            <a className="nav-item" href="/inbox" key={section}>
+              <span className="nav-icon" aria-hidden="true">â–¤</span><span>{section}</span>
+            </a>
+          ) : (
             <span className="nav-item nav-item--disabled" key={section} aria-disabled="true">
               <span className="nav-icon" aria-hidden="true">{section === "Inbox" ? "▤" : section === "Orders" ? "▱" : section === "Catalog" ? "▦" : section === "Knowledge" ? "▧" : section === "Channels" ? "⌁" : section === "Team" ? "♙" : "⚙"}</span>
               <span>{section}</span>
