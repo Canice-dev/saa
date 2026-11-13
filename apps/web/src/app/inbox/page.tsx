@@ -1,19 +1,17 @@
 import {
   ArrowLeft,
-  FileText,
   Info,
   MessageSquareText,
   Paperclip,
-  Phone,
   Search,
   Send,
-  ShieldCheck,
 } from "lucide-react";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { connection } from "next/server";
 import Link from "next/link";
 import { MobileWorkspaceBar, WorkspaceSidebar } from "@/components/workspace-sidebar";
 import { InboxMessage } from "@/components/inbox-message";
+import { CustomerDetailsDrawer } from "@/components/customer-details-drawer";
 import { getDatabase } from "@/lib/db/client";
 import { conversations, customers, messages } from "@/lib/db/schema";
 
@@ -183,6 +181,16 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                       <span className="customer-avatar customer-avatar--large" aria-hidden="true">{initials(activeConversation.customerName, activeConversation.externalUserId)}</span>
                       <span className="thread-customer"><strong>{activeConversation.customerName || activeConversation.externalUserId}</strong><small>{activeConversation.channel === "whatsapp" ? "WhatsApp" : activeConversation.channel} · {activeConversation.externalUserId}</small></span>
                       <span className={`thread-state${activeConversation.automationPaused ? " thread-state--paused" : ""}`}>{activeConversation.automationPaused ? "Paused" : activeConversation.state}</span>
+                      <CustomerDetailsDrawer
+                        avatarInitial={initials(activeConversation.customerName, activeConversation.externalUserId)}
+                        automationPaused={activeConversation.automationPaused}
+                        channel={activeConversation.channel === "whatsapp" ? "WhatsApp" : activeConversation.channel}
+                        externalUserId={activeConversation.externalUserId}
+                        lastActive={formatTime(activeConversation.updatedAt, true)}
+                        name={activeConversation.customerName || "WhatsApp customer"}
+                        phoneNumber={activeConversation.phoneNumber}
+                        replyMode={activeConversation.state}
+                      />
                     </header>
                     <div className="thread-notice"><Info size={14} /> Messages are read-only while you complete setup.</div>
                     <div className="thread-messages" aria-label="Messages in this conversation">
@@ -213,23 +221,6 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                 )}
               </section>
 
-              <aside className="customer-details panel" aria-label="Customer details">
-                {activeConversation ? (
-                  <>
-                    <div className="customer-details-heading">Customer details</div>
-                    <div className="customer-profile"><span className="customer-avatar" aria-hidden="true">{initials(activeConversation.customerName, activeConversation.externalUserId)}</span><strong>{activeConversation.customerName || "WhatsApp customer"}</strong><small>{activeConversation.phoneNumber || activeConversation.externalUserId}</small></div>
-                    <div className="details-block">
-                      <h3>Conversation</h3>
-                      <div className="details-row"><span>Channel</span><strong>{activeConversation.channel === "whatsapp" ? "WhatsApp" : activeConversation.channel}</strong></div>
-                      <div className="details-row"><span>Last active</span><strong>{formatTime(activeConversation.updatedAt, true)}</strong></div>
-                      <div className="details-row"><span>Reply mode</span><strong>{activeConversation.automationPaused ? "Paused" : activeConversation.state}</strong></div>
-                    </div>
-                    <div className="details-block"><h3>Order overview</h3><div className="details-row"><span>Linked orders</span><strong>None yet</strong></div></div>
-                    <div className="details-note"><ShieldCheck size={15} /> The seller stays in control while automatic replies are paused.</div>
-                    <div className="details-row details-contact"><Phone size={13} /><span>{activeConversation.phoneNumber || "No phone number on file"}</span></div>
-                  </>
-                ) : <div className="thread-empty"><FileText size={18} /><p>Select a conversation to see customer details.</p></div>}
-              </aside>
             </section>
           )}
 
