@@ -1,20 +1,30 @@
+import {
+  ArrowRight,
+  CheckCheck,
+  Clock3,
+  FileText,
+  Info,
+  MessageSquareText,
+  Phone,
+  ShieldCheck,
+} from "lucide-react";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { connection } from "next/server";
+import { MobileWorkspaceBar, WorkspaceSidebar } from "@/components/workspace-sidebar";
 import { getDatabase } from "@/lib/db/client";
 import { conversations, customers, messages } from "@/lib/db/schema";
 
 type InboxSearchParams = Promise<{ conversation?: string | string[] }>;
 
-function formatTime(value: Date | string | null) {
+function formatTime(value: Date | string | null, withDate = false) {
   if (!value) return "";
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   return new Intl.DateTimeFormat("en-NG", {
     timeZone: "Africa/Lagos",
+    ...(withDate ? { day: "numeric" as const, month: "short" as const } : {}),
     hour: "2-digit",
     minute: "2-digit",
-    day: "numeric",
-    month: "short",
   }).format(date);
 }
 
@@ -22,6 +32,10 @@ function previewText(body: string | null, messageType: string | null) {
   if (body) return body;
   if (!messageType) return "No messages yet";
   return `${messageType.charAt(0).toUpperCase()}${messageType.slice(1)} message`;
+}
+
+function initials(name: string | null, fallback: string) {
+  return (name?.trim() || fallback).slice(0, 1).toUpperCase();
 }
 
 export default async function InboxPage({ searchParams }: { searchParams: InboxSearchParams }) {
@@ -37,6 +51,7 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
     updatedAt: Date;
     customerName: string | null;
     externalUserId: string;
+    phoneNumber: string | null;
     lastMessageBody: string | null;
     lastMessageType: string | null;
     lastMessageAt: Date | null;
@@ -54,6 +69,7 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
         updatedAt: conversations.updatedAt,
         customerName: customers.displayName,
         externalUserId: customers.externalUserId,
+        phoneNumber: customers.phoneNumber,
         lastMessageBody: sql<string | null>`(
           select ${messages.body}
           from ${messages}
@@ -88,7 +104,6 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
   let thread: {
     id: string;
     senderRole: string;
-    direction: string;
     messageType: string;
     body: string | null;
     createdAt: Date;
@@ -102,7 +117,6 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
         .select({
           id: messages.id,
           senderRole: messages.senderRole,
-          direction: messages.direction,
           messageType: messages.messageType,
           body: messages.body,
           createdAt: sql<Date>`coalesce(${messages.providerTimestamp}, ${messages.receivedAt})`,
@@ -119,105 +133,37 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
 
   return (
     <main className="app-shell" id="inbox">
-      <aside className="sidebar" aria-label="Main navigation">
-        <a className="brand" href="/" aria-label="Sales Assistant home">
-          <span className="brand-mark" aria-hidden="true">S</span>
-          <span className="brand-name">Sales Assistant</span>
-        </a>
-
-        <div className="business-switcher">
-          <span className="business-avatar" aria-hidden="true">B</span>
-          <span className="business-copy">
-            <span className="eyebrow">YOUR BUSINESS</span>
-            <span className="business-name">Business setup</span>
-          </span>
-          <span className="switcher-chevron" aria-hidden="true">⌄</span>
-        </div>
-
-        <div className="nav-label">WORKSPACE</div>
-        <nav className="nav-list">
-          <a className="nav-item" href="/">
-            <span className="nav-icon" aria-hidden="true">◫</span> Overview
-          </a>
-          <a className="nav-item nav-item--active" href="/inbox" aria-current="page">
-            <span className="nav-icon" aria-hidden="true">▤</span> Inbox
-          </a>
-          {["Orders", "Catalog", "Knowledge", "Channels", "Team", "Settings"].map((section) => (
-            <span className="nav-item nav-item--disabled" key={section} aria-disabled="true">
-              <span className="nav-icon" aria-hidden="true">·</span>
-              <span>{section}</span>
-              <span className="nav-soon">SOON</span>
-            </span>
-          ))}
-        </nav>
-
-        <div className="sidebar-bottom">
-          <div className="help-card">
-            <span className="help-icon" aria-hidden="true">?</span>
-            <div>
-              <strong>Need a hand?</strong>
-              <p>More setup guidance is coming soon.</p>
-            </div>
-          </div>
-          <div className="account-row">
-            <span className="account-avatar">O</span>
-            <span className="account-copy"><strong>Owner account</strong><small>Business admin</small></span>
-            <span className="account-menu" aria-hidden="true">•••</span>
-          </div>
-        </div>
-      </aside>
-
+      <WorkspaceSidebar active="inbox" />
       <section className="main-panel">
+        <MobileWorkspaceBar title="Inbox" />
         <header className="topbar">
           <div className="breadcrumbs"><a href="/">Workspace</a><span className="breadcrumb-separator">/</span><strong>Inbox</strong></div>
-          <div className="topbar-right">
-            <span className="environment-pill"><span className="status-dot" /> Setup mode</span>
-            <span className="topbar-avatar" aria-label="Owner account">O</span>
-          </div>
+          <div className="topbar-right"><span className="environment-pill"><span className="status-dot status-dot--amber" /> Setup mode</span><span className="topbar-avatar" aria-label="Owner account">O</span></div>
         </header>
 
         <div className="page-content inbox-page-content">
           <section className="welcome-row inbox-welcome">
-            <div>
-              <p className="date-kicker">CUSTOMER MESSAGES</p>
-              <h1>Inbox<span className="heading-period">.</span></h1>
-              <p className="welcome-subtitle">Review conversations received through your connected channels.</p>
-            </div>
-            <a className="secondary-button" href="/inbox">Refresh inbox</a>
+            <div><p className="date-kicker">Customer messages</p><h1>Inbox<span className="heading-period">.</span></h1><p className="welcome-subtitle">Review conversations and keep your team in control.</p></div>
+            <a className="secondary-button" href="/inbox">Refresh inbox<ArrowRight size={14} /></a>
           </section>
 
           {inboxError ? (
-            <section className="inbox-notice" role="status">
-              <strong>Couldn’t load conversations.</strong>
-              <p>Check that the database is configured and migrations have been applied, then refresh.</p>
-            </section>
+            <section className="inbox-notice" role="status"><strong>Couldn’t load conversations.</strong><p>Check that the database is configured and migrations have been applied, then refresh.</p></section>
           ) : (
             <section className="inbox-layout" aria-label="Customer inbox">
-              <div className="conversation-list panel">
-                <div className="conversation-list-heading">
-                  <div><p className="section-kicker">ALL CHANNELS</p><h2>Conversations</h2></div>
-                  <span className="conversation-count">{inboxItems.length}</span>
-                </div>
+              <aside className="conversation-list panel" aria-label="Conversation list">
+                <div className="conversation-list-heading"><div><p className="section-kicker">All channels</p><h2>Conversations</h2></div><span className="conversation-count">{inboxItems.length}</span></div>
                 {inboxItems.length === 0 ? (
-                  <div className="inbox-empty-list">
-                    <span className="inbox-empty-icon" aria-hidden="true">▤</span>
-                    <h3>No conversations yet</h3>
-                    <p>When a customer message reaches your webhook, it will appear here.</p>
-                  </div>
+                  <div className="inbox-empty-list"><span className="inbox-empty-icon"><MessageSquareText size={18} /></span><h3>No conversations yet</h3><p>When a customer message reaches your channel, it will appear here.</p></div>
                 ) : (
                   <div className="conversation-items">
                     {inboxItems.map((item) => {
                       const selected = activeConversation?.id === item.id;
                       return (
-                        <a
-                          className={`conversation-item${selected ? " conversation-item--selected" : ""}`}
-                          href={`/inbox?conversation=${encodeURIComponent(item.id)}`}
-                          key={item.id}
-                          aria-current={selected ? "page" : undefined}
-                        >
-                          <span className="customer-avatar" aria-hidden="true">{(item.customerName ?? "C").slice(0, 1).toUpperCase()}</span>
+                        <a className={`conversation-item${selected ? " conversation-item--selected" : ""}`} href={`/inbox?conversation=${encodeURIComponent(item.id)}`} key={item.id} aria-current={selected ? "page" : undefined}>
+                          <span className="customer-avatar" aria-hidden="true">{initials(item.customerName, item.externalUserId)}</span>
                           <span className="conversation-item-copy">
-                            <span className="conversation-item-top"><strong>{item.customerName || item.externalUserId}</strong><time>{formatTime(item.lastMessageAt ?? item.updatedAt)}</time></span>
+                            <span className="conversation-item-top"><strong>{item.customerName || item.externalUserId}</strong><time>{formatTime(item.lastMessageAt ?? item.updatedAt, true)}</time></span>
                             <span className="conversation-item-preview">{previewText(item.lastMessageBody, item.lastMessageType)}</span>
                             <span className="conversation-item-meta">{item.channel === "whatsapp" ? "WhatsApp" : item.channel} · {item.automationPaused ? "Paused" : item.state}</span>
                           </span>
@@ -226,42 +172,59 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                     })}
                   </div>
                 )}
-              </div>
+              </aside>
 
-              <div className="conversation-thread panel">
+              <section className="conversation-thread panel" aria-label="Selected conversation">
                 {activeConversation ? (
                   <>
                     <header className="thread-header">
-                      <span className="customer-avatar customer-avatar--large" aria-hidden="true">{(activeConversation.customerName ?? "C").slice(0, 1).toUpperCase()}</span>
+                      <span className="customer-avatar customer-avatar--large" aria-hidden="true">{initials(activeConversation.customerName, activeConversation.externalUserId)}</span>
                       <span className="thread-customer"><strong>{activeConversation.customerName || activeConversation.externalUserId}</strong><small>{activeConversation.channel === "whatsapp" ? "WhatsApp" : activeConversation.channel} · {activeConversation.externalUserId}</small></span>
                       <span className={`thread-state${activeConversation.automationPaused ? " thread-state--paused" : ""}`}>{activeConversation.automationPaused ? "Paused" : activeConversation.state}</span>
                     </header>
+                    <div className="thread-notice"><Info size={14} /> Messages are read-only while you complete setup.</div>
                     <div className="thread-messages" aria-label="Messages in this conversation">
-                      {threadError ? (
-                        <div className="thread-empty"><p>Couldn’t load messages. Refresh to try again.</p></div>
-                      ) : thread.length === 0 ? (
-                        <div className="thread-empty"><p>No messages are stored for this conversation yet.</p></div>
-                      ) : thread.map((message) => (
-                        <article className={`message-bubble message-bubble--${message.senderRole}`} key={message.id}>
-                          <p>{previewText(message.body, message.messageType)}</p>
-                          <span>{formatTime(message.createdAt)}{message.deliveryStatus ? ` · ${message.deliveryStatus}` : ""}</span>
-                        </article>
-                      ))}
+                      {threadError ? <div className="thread-empty"><p>Couldn’t load messages. Refresh to try again.</p></div> : thread.length === 0 ? <div className="thread-empty"><p>No messages are stored for this conversation yet.</p></div> : thread.map((message) => {
+                        const outgoing = message.senderRole !== "customer";
+                        const sender = message.senderRole === "assistant" ? "Assistant" : message.senderRole === "seller" ? "Your business" : "Customer";
+                        return (
+                          <article className={`message-bubble message-bubble--${message.senderRole}`} key={message.id}>
+                            <span className="message-sender">{sender}</span>
+                            <p>{previewText(message.body, message.messageType)}</p>
+                            <span>{formatTime(message.createdAt)}{outgoing && message.deliveryStatus ? ` · ${message.deliveryStatus}` : ""}</span>
+                            {outgoing && message.deliveryStatus && <CheckCheck className="message-check" size={13} aria-label={message.deliveryStatus} />}
+                          </article>
+                        );
+                      })}
                     </div>
-                    <div className="thread-footer"><span className="status-dot status-dot--amber" /> Replies are paused while channel handoff is being verified.</div>
+                    <div className="thread-footer"><span className="status-dot status-dot--amber" /> Automatic replies are paused while channel handoff is verified.</div>
                   </>
                 ) : (
-                  <div className="thread-empty thread-empty--welcome">
-                    <span className="inbox-empty-icon" aria-hidden="true">◫</span>
-                    <h2>Your conversations will appear here</h2>
-                    <p>Select a conversation to review its messages and delivery status.</p>
-                  </div>
+                  <div className="thread-empty thread-empty--welcome"><span className="inbox-empty-icon"><MessageSquareText size={19} /></span><h2>Your conversations will appear here</h2><p>Select a conversation to review its messages and delivery status.</p></div>
                 )}
-              </div>
+              </section>
+
+              <aside className="customer-details panel" aria-label="Customer details">
+                {activeConversation ? (
+                  <>
+                    <div className="customer-details-heading">Customer details</div>
+                    <div className="customer-profile"><span className="customer-avatar" aria-hidden="true">{initials(activeConversation.customerName, activeConversation.externalUserId)}</span><strong>{activeConversation.customerName || "WhatsApp customer"}</strong><small>{activeConversation.phoneNumber || activeConversation.externalUserId}</small></div>
+                    <div className="details-block">
+                      <h3>Conversation</h3>
+                      <div className="details-row"><span>Channel</span><strong>{activeConversation.channel === "whatsapp" ? "WhatsApp" : activeConversation.channel}</strong></div>
+                      <div className="details-row"><span>Last active</span><strong>{formatTime(activeConversation.updatedAt, true)}</strong></div>
+                      <div className="details-row"><span>Reply mode</span><strong>{activeConversation.automationPaused ? "Paused" : activeConversation.state}</strong></div>
+                    </div>
+                    <div className="details-block"><h3>Order overview</h3><div className="details-row"><span>Linked orders</span><strong>None yet</strong></div></div>
+                    <div className="details-note"><ShieldCheck size={15} /> The seller stays in control while automatic replies are paused.</div>
+                    <div className="details-row details-contact"><Phone size={13} /><span>{activeConversation.phoneNumber || "No phone number on file"}</span></div>
+                  </>
+                ) : <div className="thread-empty"><FileText size={18} /><p>Select a conversation to see customer details.</p></div>}
+              </aside>
             </section>
           )}
 
-          <footer className="page-footer"><span>Sales Assistant</span><span>One business. One private workspace.</span><span>Inbox data is read-only</span></footer>
+          <footer className="page-footer"><span>Sales Assistant</span><span>One business. One private workspace.</span><span>Inbox messages are read-only</span></footer>
         </div>
       </section>
     </main>
