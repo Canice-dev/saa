@@ -1,20 +1,23 @@
 import {
-  ArrowRight,
-  CheckCheck,
+  ArrowLeft,
   FileText,
   Info,
   MessageSquareText,
+  Paperclip,
   Phone,
+  Search,
+  Send,
   ShieldCheck,
 } from "lucide-react";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { connection } from "next/server";
 import Link from "next/link";
 import { MobileWorkspaceBar, WorkspaceSidebar } from "@/components/workspace-sidebar";
+import { InboxMessage } from "@/components/inbox-message";
 import { getDatabase } from "@/lib/db/client";
 import { conversations, customers, messages } from "@/lib/db/schema";
 
-type InboxSearchParams = Promise<{ conversation?: string | string[] }>;
+type InboxSearchParams = Promise<{ conversation?: string | string[]; q?: string | string[] }>;
 
 function formatTime(value: Date | string | null, withDate = false) {
   if (!value) return "";
@@ -42,6 +45,7 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
   await connection();
   const params = await searchParams;
   const requestedId = Array.isArray(params.conversation) ? params.conversation[0] : params.conversation;
+  const searchQuery = (Array.isArray(params.q) ? params.q[0] : params.q)?.trim() ?? "";
 
   let inboxItems: {
     id: string;
@@ -100,7 +104,10 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
     inboxError = true;
   }
 
-  const activeConversation = inboxItems.find((item) => item.id === requestedId) ?? inboxItems[0];
+  const visibleItems = searchQuery
+    ? inboxItems.filter((item) => `${item.customerName ?? ""} ${item.externalUserId} ${item.phoneNumber ?? ""} ${item.channel}`.toLowerCase().includes(searchQuery.toLowerCase()))
+    : inboxItems;
+  const activeConversation = visibleItems.find((item) => item.id === requestedId) ?? visibleItems[0];
   let thread: {
     id: string;
     senderRole: string;
@@ -134,25 +141,24 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
   return (
     <main className="app-shell" id="inbox">
       <WorkspaceSidebar active="inbox" />
-      <section className="main-panel">
+      <section className="main-panel inbox-main-panel">
         <MobileWorkspaceBar title="Inbox" />
         <div className="page-content inbox-page-content">
-          <section className="welcome-row inbox-welcome">
-            <div><p className="date-kicker">Customer messages</p><h1>Inbox<span className="heading-period">.</span></h1><p className="welcome-subtitle">Review conversations and keep your team in control.</p></div>
-            <Link className="secondary-button" href="/inbox">Refresh inbox<ArrowRight size={14} /></Link>
-          </section>
-
           {inboxError ? (
             <section className="inbox-notice" role="status"><strong>Couldn’t load conversations.</strong><p>Check that the database is configured and migrations have been applied, then refresh.</p></section>
           ) : (
-            <section className="inbox-layout" aria-label="Customer inbox">
+            <section className={`inbox-layout${requestedId ? " inbox-layout--mobile-thread" : " inbox-layout--mobile-list"}`} aria-label="Customer inbox">
               <aside className="conversation-list panel" aria-label="Conversation list">
-                <div className="conversation-list-heading"><div><p className="section-kicker">All channels</p><h2>Conversations</h2></div><span className="conversation-count">{inboxItems.length}</span></div>
-                {inboxItems.length === 0 ? (
-                  <div className="inbox-empty-list"><span className="inbox-empty-icon"><MessageSquareText size={18} /></span><h3>No conversations yet</h3><p>When a customer message reaches your channel, it will appear here.</p></div>
+                <div className="conversation-list-heading"><div><h1>Chats</h1><span>{visibleItems.length} conversations</span></div></div>
+                <form className="conversation-search" action="/inbox" role="search">
+                  <Search size={16} aria-hidden="true" />
+                  <input type="search" name="q" placeholder="Search or start a new chat" defaultValue={searchQuery} aria-label="Search conversations" />
+                </form>
+                {visibleItems.length === 0 ? (
+                  <div className="inbox-empty-list"><span className="inbox-empty-icon"><MessageSquareText size={18} /></span><h3>{searchQuery ? "No chats found" : "No conversations yet"}</h3><p>{searchQuery ? "Try a different name, number, or channel." : "When a customer message reaches your channel, it will appear here."}</p></div>
                 ) : (
                   <div className="conversation-items">
-                    {inboxItems.map((item) => {
+                    {visibleItems.map((item) => {
                       const selected = activeConversation?.id === item.id;
                       return (
                         <Link className={`conversation-item${selected ? " conversation-item--selected" : ""}`} href={`/inbox?conversation=${encodeURIComponent(item.id)}`} key={item.id} aria-current={selected ? "page" : undefined}>
@@ -173,6 +179,7 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                 {activeConversation ? (
                   <>
                     <header className="thread-header">
+                      <Link className="thread-back" href="/inbox" aria-label="Back to chats"><ArrowLeft size={19} /></Link>
                       <span className="customer-avatar customer-avatar--large" aria-hidden="true">{initials(activeConversation.customerName, activeConversation.externalUserId)}</span>
                       <span className="thread-customer"><strong>{activeConversation.customerName || activeConversation.externalUserId}</strong><small>{activeConversation.channel === "whatsapp" ? "WhatsApp" : activeConversation.channel} · {activeConversation.externalUserId}</small></span>
                       <span className={`thread-state${activeConversation.automationPaused ? " thread-state--paused" : ""}`}>{activeConversation.automationPaused ? "Paused" : activeConversation.state}</span>
@@ -183,14 +190,21 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                         const outgoing = message.senderRole !== "customer";
                         const sender = message.senderRole === "assistant" ? "Assistant" : message.senderRole === "seller" ? "Your business" : "Customer";
                         return (
-                          <article className={`message-bubble message-bubble--${message.senderRole}`} key={message.id}>
-                            <span className="message-sender">{sender}</span>
-                            <p>{previewText(message.body, message.messageType)}</p>
-                            <span>{formatTime(message.createdAt)}{outgoing && message.deliveryStatus ? ` · ${message.deliveryStatus}` : ""}</span>
-                            {outgoing && message.deliveryStatus && <CheckCheck className="message-check" size={13} aria-label={message.deliveryStatus} />}
-                          </article>
+                          <InboxMessage
+                            key={message.id}
+                            body={previewText(message.body, message.messageType)}
+                            deliveryStatus={message.deliveryStatus}
+                            outgoing={outgoing}
+                            sender={sender}
+                            time={formatTime(message.createdAt)}
+                          />
                         );
                       })}
+                    </div>
+                    <div className="reply-composer" aria-label="Reply composer">
+                      <button type="button" disabled aria-label="Attach a file"><Paperclip size={18} /></button>
+                      <input type="text" disabled placeholder="Replies are disabled during setup" aria-label="Write a reply" />
+                      <button className="reply-send" type="button" disabled aria-label="Send reply"><Send size={16} /></button>
                     </div>
                     <div className="thread-footer"><span className="status-dot status-dot--amber" /> Automatic replies are paused while channel handoff is verified.</div>
                   </>
@@ -219,7 +233,6 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
             </section>
           )}
 
-          <footer className="page-footer"><span>Sales Assistant</span><span>One business. One private workspace.</span><span>Inbox messages are read-only</span></footer>
         </div>
       </section>
     </main>
