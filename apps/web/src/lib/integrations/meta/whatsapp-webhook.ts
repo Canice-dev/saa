@@ -57,8 +57,11 @@ function messageBody(message: JsonObject): {
   const content = isObject(message[type])
     ? (message[type] as JsonObject)
     : undefined;
-  const body =
-    type === "text" && content ? (asString(content.body) ?? null) : null;
+  const body = type === "text" && content
+    ? (asString(content.body) ?? null)
+    : type === "reaction" && content
+      ? (typeof content.emoji === "string" && content.emoji.length > 0 ? content.emoji : null)
+      : null;
   return { type, body };
 }
 
@@ -104,9 +107,12 @@ async function persistInboundMessage(input: {
       FROM upserted_customer
       ON CONFLICT (business_id, channel, customer_id)
       DO UPDATE SET
-        state = 'open',
-        response_generation = conversations.response_generation + 1,
-        last_customer_message_at = COALESCE(${input.providerTimestamp ?? null}, now()),
+        state = CASE WHEN ${input.messageType} = 'reaction' THEN conversations.state ELSE 'open' END,
+        response_generation = conversations.response_generation + CASE WHEN ${input.messageType} = 'reaction' THEN 0 ELSE 1 END,
+        last_customer_message_at = CASE
+          WHEN ${input.messageType} = 'reaction' THEN conversations.last_customer_message_at
+          ELSE COALESCE(${input.providerTimestamp ?? null}, now())
+        END,
         updated_at = now()
       RETURNING id, response_generation
     ), inserted_message AS (
@@ -134,6 +140,7 @@ async function persistInboundMessage(input: {
       JOIN upserted_conversation ON upserted_conversation.id = inserted_message.conversation_id
       CROSS JOIN business_settings
       WHERE business_settings.business_id = 1
+        AND ${input.messageType} <> 'reaction'
       ON CONFLICT (dedupe_key) DO NOTHING
       RETURNING id
     )

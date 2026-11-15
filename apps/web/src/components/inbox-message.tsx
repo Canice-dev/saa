@@ -8,11 +8,12 @@ type InboxMessageProps = {
   body: string;
   avatarInitial: string;
   deliveryStatus: string | null;
+  messageType: string;
   outgoing: boolean;
   time: string;
 };
 
-export function InboxMessage({ body, avatarInitial, deliveryStatus, outgoing, time }: InboxMessageProps) {
+export function InboxMessage({ body, avatarInitial, deliveryStatus, messageType, outgoing, time }: InboxMessageProps) {
   const [copied, setCopied] = useState(false);
 
   async function copyMessage() {
@@ -30,7 +31,7 @@ export function InboxMessage({ body, avatarInitial, deliveryStatus, outgoing, ti
       <Message align={outgoing ? "end" : "start"} className={`message-row${outgoing ? " message-row--outgoing" : ""}`}>
         <MessageAvatar className="message-avatar" aria-hidden="true">{avatarInitial}</MessageAvatar>
         <MessageContent className="message-row-content">
-          <article className={`message-bubble${outgoing ? " message-bubble--outgoing" : ""}`}>
+          <article className={`message-bubble${outgoing ? " message-bubble--outgoing" : ""}${messageType === "reaction" ? " message-bubble--reaction" : ""}`}>
             <p>{body}</p>
           </article>
           <MessageFooter className={`message-time${outgoing ? " message-time--outgoing" : ""}`}>

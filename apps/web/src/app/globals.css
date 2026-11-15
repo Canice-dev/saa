@@ -298,6 +298,8 @@ h1 { margin-bottom: 6px; color: var(--ink); font-size: clamp(28px, 2.5vw, 36px);
 .message-bubble--outgoing { border-color: #1d4fff; border-radius: 17px 17px 5px 17px; background: #1d4fff; }
 .message-bubble p { margin: 0; color: #303640; font-size: 13px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .message-bubble--outgoing p { color: #fff; }
+.message-bubble--reaction { padding: 3px 8px; border-radius: 999px; }
+.message-bubble--reaction p { font-size: 23px; line-height: 1.2; }
 .message-row .message-time { width: fit-content; min-height: 14px; align-items: center; gap: 8px; padding: 2px 4px 0; color: #7a808a; font-size: 10px; font-weight: 450; }
 .message-row .message-time--outgoing { justify-content: flex-end; }
 .message-delivery-status { color: #707782; }

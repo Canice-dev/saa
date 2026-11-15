@@ -32,6 +32,7 @@ function formatTime(value: Date | string | null, withDate = false) {
 function previewText(body: string | null, messageType: string | null) {
   if (body) return body;
   if (!messageType) return "No messages yet";
+  if (messageType === "reaction") return "Reacted to a message";
   return `${messageType.charAt(0).toUpperCase()}${messageType.slice(1)} message`;
 }
 
@@ -219,6 +220,7 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                             body={previewText(message.body, message.messageType)}
                             avatarInitial={outgoing ? "S" : initials(activeConversation.customerName, activeConversation.externalUserId)}
                             deliveryStatus={message.deliveryStatus}
+                            messageType={message.messageType}
                             outgoing={outgoing}
                             time={formatTime(message.createdAt)}
                           />
