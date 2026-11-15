@@ -19,16 +19,16 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-type WorkspaceSection = "overview" | "inbox" | "orders";
+type WorkspaceSection = "overview" | "inbox" | "orders" | "catalog";
 
 const navigation = [
   { label: "Overview", href: "/", icon: LayoutDashboard, key: "overview" },
   { label: "Inbox", href: "/inbox", icon: MessageSquareText, key: "inbox" },
   { label: "Orders", href: "/orders", icon: ShoppingBag, key: "orders" },
+  { label: "Catalog", href: "/catalog", icon: Boxes, key: "catalog" },
 ] as const;
 
 const comingSoon = [
-  { label: "Catalog", icon: Boxes },
   { label: "Knowledge", icon: BookOpenText },
   { label: "Channels", icon: Plug },
   { label: "Team", icon: Users },

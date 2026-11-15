@@ -319,3 +319,89 @@ export const schemaMigrations = pgTable("schema_migrations", {
     .default(sql`now()`)
     .notNull(),
 });
+
+export const products = pgTable(
+  "products",
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    businessId: smallint("business_id").default(1).notNull(),
+    sku: text().notNull(),
+    name: text().notNull(),
+    description: text(),
+    category: text(),
+    price: numeric({ precision: 12, scale: 2, mode: "number" }).notNull(),
+    currency: char({ length: 3 }).default("NGN").notNull(),
+    stockQuantity: integer("stock_quantity").default(0).notNull(),
+    searchTerms: text("search_terms"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`now()`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .default(sql`now()`)
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.businessId],
+      foreignColumns: [businesses.id],
+      name: "products_business_id_fkey",
+    }).onDelete("cascade"),
+    unique("products_business_id_sku_key").on(table.businessId, table.sku),
+    index("products_business_name_idx").on(table.businessId, table.name),
+    check("products_price_check", sql`(price >= 0)`),
+    check("products_stock_quantity_check", sql`(stock_quantity >= 0)`),
+  ],
+);
+
+export const catalogImports = pgTable(
+  "catalog_imports",
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    businessId: smallint("business_id").default(1).notNull(),
+    fileName: text("file_name").notNull(),
+    status: text().default("uploading").notNull(),
+    totalRows: integer("total_rows").default(0).notNull(),
+    updateExisting: boolean("update_existing").default(false).notNull(),
+    appliedThroughRowNumber: integer("applied_through_row_number").default(1).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`now()`)
+      .notNull(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.businessId],
+      foreignColumns: [businesses.id],
+      name: "catalog_imports_business_id_fkey",
+    }).onDelete("cascade"),
+    index("catalog_imports_business_created_idx").on(
+      table.businessId,
+      table.createdAt,
+    ),
+    check(
+      "catalog_imports_status_check",
+      sql`(status = ANY (ARRAY['uploading'::text, 'review'::text, 'imported'::text]))`,
+    ),
+  ],
+);
+
+export const catalogImportRows = pgTable(
+  "catalog_import_rows",
+  {
+    importId: uuid("import_id").notNull(),
+    rowNumber: integer("row_number").notNull(),
+    sku: text(),
+    raw: jsonb().default({}).notNull(),
+    normalized: jsonb().default({}).notNull(),
+    errors: text().array().default(sql`ARRAY[]::text[]`).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.importId, table.rowNumber] }),
+    foreignKey({
+      columns: [table.importId],
+      foreignColumns: [catalogImports.id],
+      name: "catalog_import_rows_import_id_fkey",
+    }).onDelete("cascade"),
+    index("catalog_import_rows_import_sku_idx").on(table.importId, table.sku),
+  ],
+);
