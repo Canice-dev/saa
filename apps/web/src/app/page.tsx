@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import {
   ArrowRight,
   BookOpenText,
@@ -11,6 +12,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { MobileWorkspaceBar, WorkspaceSidebar } from "@/components/workspace-sidebar";
+import { AutomationToggle } from "@/components/automation-toggle";
+import { getDatabase } from "@/lib/db/client";
+import { businessSettings } from "@/lib/db/schema";
 
 const setupSteps = [
   { title: "Connect a messaging channel", detail: "Link WhatsApp Business or Instagram to receive customer messages.", icon: Plug },
@@ -26,7 +30,21 @@ const metrics = [
   { label: "Setup complete", value: "0 of 4", note: "Get ready to assist customers", icon: Check, tone: "green" },
 ];
 
-export default function Home() {
+export default async function Home() {
+  let automationEnabled: boolean | null = null;
+  if (process.env.DATABASE_URL) {
+    try {
+      const [settings] = await getDatabase()
+        .select({ automationEnabled: businessSettings.automationEnabled })
+        .from(businessSettings)
+        .where(eq(businessSettings.businessId, 1))
+        .limit(1);
+      automationEnabled = settings?.automationEnabled ?? false;
+    } catch {
+      automationEnabled = null;
+    }
+  }
+
   return (
     <main className="app-shell" id="overview">
       <WorkspaceSidebar active="overview" />
@@ -42,13 +60,16 @@ export default function Home() {
             <Link className="primary-button" href="/inbox"><MessageSquareText size={16} /> Open inbox<ArrowRight size={15} /></Link>
           </section>
 
-          <section className="status-banner" aria-label="Assistant status">
-            <div className="status-banner-icon"><span className="status-ring"><span className="status-dot status-dot--amber" /></span></div>
+          <section className={`status-banner${automationEnabled ? " status-banner--enabled" : ""}`} aria-label="Assistant status">
+            <div className="status-banner-icon"><span className="status-ring"><span className={`status-dot ${automationEnabled ? "status-dot--green" : "status-dot--amber"}`} /></span></div>
             <div className="status-banner-copy">
-              <div className="status-title-row"><h2>Automatic replies are paused</h2><span className="status-tag">Setup mode</span></div>
-              <p>Customer messages can reach your inbox while you connect a channel and test seller handoff.</p>
+              <div className="status-title-row"><h2>{automationEnabled === null ? "Automatic reply status unavailable" : `Automatic replies are ${automationEnabled ? "on" : "paused"}`}</h2><span className="status-tag">{automationEnabled === null ? "Could not load" : automationEnabled ? "Automation on" : "Setup mode"}</span></div>
+              <p>{automationEnabled === null ? "Refresh the page to load the current automation setting." : automationEnabled ? "The assistant will reply to eligible WhatsApp conversations." : "Customer messages can reach your inbox while you connect a channel and test seller handoff."}</p>
             </div>
+            <div className="status-banner-actions">
+              <AutomationToggle initialValue={automationEnabled} />
               <Link className="text-link" href="/inbox">Review inbox<ArrowRight size={14} /></Link>
+            </div>
           </section>
 
           <section className="metrics-grid" aria-label="Workspace summary">

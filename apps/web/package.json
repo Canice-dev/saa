@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "ai:worker": "tsx scripts/ai-worker.ts",
     "lint": "eslint",
     "db:migrate": "drizzle-kit migrate && tsx scripts/db-seed.ts",
     "db:migrate:legacy": "node --env-file=.env scripts/db-migrate.mjs",
