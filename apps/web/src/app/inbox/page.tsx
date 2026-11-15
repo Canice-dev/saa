@@ -10,6 +10,7 @@ import Link from "next/link";
 import { MobileWorkspaceBar, WorkspaceSidebar } from "@/components/workspace-sidebar";
 import { InboxMessage } from "@/components/inbox-message";
 import { InboxReplyComposer } from "@/components/inbox-reply-composer";
+import { InboxMessageScroller } from "@/components/inbox-message-scroller";
 import { InboxAutoRefresh } from "@/components/inbox-auto-refresh";
 import { CustomerDetailsDrawer } from "@/components/customer-details-drawer";
 import { getDatabase } from "@/lib/db/client";
@@ -211,7 +212,7 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                       />
                     </header>
                     <div className="thread-notice"><Info size={14} /> Seller replies go through WhatsApp. Automatic replies remain paused.</div>
-                    <div className="thread-messages" aria-label="Messages in this conversation">
+                    <InboxMessageScroller key={activeConversation.id} messageCount={thread.length}>
                       {threadError ? <div className="thread-empty"><p>Couldn’t load messages. Refresh to try again.</p></div> : thread.length === 0 ? <div className="thread-empty"><p>No messages are stored for this conversation yet.</p></div> : thread.map((message) => {
                         const outgoing = message.senderRole !== "customer";
                         return (
@@ -226,7 +227,7 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                           />
                         );
                       })}
-                    </div>
+                    </InboxMessageScroller>
                     <InboxReplyComposer conversationId={activeConversation.id} disabledReason={replyUnavailableReason} />
                     <div className="thread-footer"><span className="status-dot status-dot--amber" /> Automatic replies are paused while channel handoff is verified.</div>
                   </>

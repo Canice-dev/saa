@@ -288,7 +288,11 @@ h1 { margin-bottom: 6px; color: var(--ink); font-size: clamp(28px, 2.5vw, 36px);
 .thread-customer small { overflow: hidden; color: #737c77; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .thread-state { padding: 5px 8px; border-radius: 99px; color: #315e4c; background: #eaf4ef; font-size: 10px; font-weight: 550; text-transform: capitalize; }
 .thread-state--paused { color: #505864; background: #e8eaee; }
+.thread-message-area { position: relative; display: flex; min-height: 0; flex: 1; overflow: hidden; }
 .thread-messages { display: flex; min-height: 0; flex: 1; flex-direction: column; gap: 13px; overflow-y: auto; padding: 24px clamp(16px, 4vw, 54px); background: #f2f3f5; }
+.thread-scroll-latest { position: absolute; right: 18px; bottom: 18px; z-index: 2; display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #dfe3e9; border-radius: 999px; background: #fff; color: #303640; box-shadow: 0 3px 12px rgb(20 28 38 / 14%); cursor: pointer; transition: transform 150ms ease, box-shadow 150ms ease; }
+.thread-scroll-latest:hover { transform: translateY(-2px); box-shadow: 0 5px 16px rgb(20 28 38 / 18%); }
+.thread-scroll-latest:focus-visible { outline: 2px solid #1d4fff; outline-offset: 2px; }
 .message-row-group { display: contents; }
 .message-row { width: 100%; align-items: flex-end; gap: 0; }
 .message-row .message-avatar { width: 28px; height: 28px; min-width: 28px; margin: 0 8px 2px 0; transform: none; color: #4c5561; background: #e4e7eb; font-size: 10px; font-weight: 650; }
