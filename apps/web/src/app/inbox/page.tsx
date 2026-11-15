@@ -2,15 +2,15 @@ import {
   ArrowLeft,
   Info,
   MessageSquareText,
-  Paperclip,
   Search,
-  Send,
 } from "lucide-react";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { connection } from "next/server";
 import Link from "next/link";
 import { MobileWorkspaceBar, WorkspaceSidebar } from "@/components/workspace-sidebar";
 import { InboxMessage } from "@/components/inbox-message";
+import { InboxReplyComposer } from "@/components/inbox-reply-composer";
+import { InboxAutoRefresh } from "@/components/inbox-auto-refresh";
 import { CustomerDetailsDrawer } from "@/components/customer-details-drawer";
 import { getDatabase } from "@/lib/db/client";
 import { conversations, customers, messages } from "@/lib/db/schema";
@@ -136,8 +136,27 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
     }
   }
 
+  const mostRecentCustomerMessage = [...thread].reverse().find((message) => message.senderRole === "customer");
+  const lastCustomerMessageAt = mostRecentCustomerMessage?.createdAt
+    ? new Date(mostRecentCustomerMessage.createdAt).getTime()
+    : null;
+  const now = Date.now();
+  const replyWindowOpen = lastCustomerMessageAt !== null &&
+    now - lastCustomerMessageAt >= 0 &&
+    now - lastCustomerMessageAt < 24 * 60 * 60 * 1000;
+  const replyUnavailableReason = threadError
+    ? "Couldn’t verify the WhatsApp reply window. Refresh before sending."
+    : activeConversation?.channel !== "whatsapp"
+      ? "Replies are currently available for WhatsApp only."
+      : !process.env.WHATSAPP_PHONE_NUMBER_ID || !process.env.WHATSAPP_ACCESS_TOKEN
+        ? "Connect WhatsApp to enable replies."
+        : !replyWindowOpen
+          ? "The 24-hour reply window has expired. An approved WhatsApp template is required to message this customer."
+          : undefined;
+
   return (
     <main className="app-shell" id="inbox">
+      <InboxAutoRefresh />
       <WorkspaceSidebar active="inbox" />
       <section className="main-panel inbox-main-panel">
         <MobileWorkspaceBar title="Inbox" />
@@ -164,7 +183,6 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                           <span className="conversation-item-copy">
                             <span className="conversation-item-top"><strong>{item.customerName || item.externalUserId}</strong><time>{formatTime(item.lastMessageAt ?? item.updatedAt, true)}</time></span>
                             <span className="conversation-item-preview">{previewText(item.lastMessageBody, item.lastMessageType)}</span>
-                            <span className="conversation-item-meta">{item.channel === "whatsapp" ? "WhatsApp" : item.channel} · {item.automationPaused ? "Paused" : item.state}</span>
                           </span>
                         </Link>
                       );
@@ -179,8 +197,7 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                     <header className="thread-header">
                       <Link className="thread-back" href="/inbox" aria-label="Back to chats"><ArrowLeft size={19} /></Link>
                       <span className="customer-avatar customer-avatar--large" aria-hidden="true">{initials(activeConversation.customerName, activeConversation.externalUserId)}</span>
-                      <span className="thread-customer"><strong>{activeConversation.customerName || activeConversation.externalUserId}</strong><small>{activeConversation.channel === "whatsapp" ? "WhatsApp" : activeConversation.channel} · {activeConversation.externalUserId}</small></span>
-                      <span className={`thread-state${activeConversation.automationPaused ? " thread-state--paused" : ""}`}>{activeConversation.automationPaused ? "Paused" : activeConversation.state}</span>
+                      <span className="thread-customer"><strong>{activeConversation.customerName || activeConversation.externalUserId}</strong></span>
                       <CustomerDetailsDrawer
                         avatarInitial={initials(activeConversation.customerName, activeConversation.externalUserId)}
                         automationPaused={activeConversation.automationPaused}
@@ -192,28 +209,23 @@ export default async function InboxPage({ searchParams }: { searchParams: InboxS
                         replyMode={activeConversation.state}
                       />
                     </header>
-                    <div className="thread-notice"><Info size={14} /> Messages are read-only while you complete setup.</div>
+                    <div className="thread-notice"><Info size={14} /> Seller replies go through WhatsApp. Automatic replies remain paused.</div>
                     <div className="thread-messages" aria-label="Messages in this conversation">
                       {threadError ? <div className="thread-empty"><p>Couldn’t load messages. Refresh to try again.</p></div> : thread.length === 0 ? <div className="thread-empty"><p>No messages are stored for this conversation yet.</p></div> : thread.map((message) => {
                         const outgoing = message.senderRole !== "customer";
-                        const sender = message.senderRole === "assistant" ? "Assistant" : message.senderRole === "seller" ? "Your business" : "Customer";
                         return (
                           <InboxMessage
                             key={message.id}
                             body={previewText(message.body, message.messageType)}
+                            avatarInitial={outgoing ? "S" : initials(activeConversation.customerName, activeConversation.externalUserId)}
                             deliveryStatus={message.deliveryStatus}
                             outgoing={outgoing}
-                            sender={sender}
                             time={formatTime(message.createdAt)}
                           />
                         );
                       })}
                     </div>
-                    <div className="reply-composer" aria-label="Reply composer">
-                      <button type="button" disabled aria-label="Attach a file"><Paperclip size={18} /></button>
-                      <input type="text" disabled placeholder="Replies are disabled during setup" aria-label="Write a reply" />
-                      <button className="reply-send" type="button" disabled aria-label="Send reply"><Send size={16} /></button>
-                    </div>
+                    <InboxReplyComposer conversationId={activeConversation.id} disabledReason={replyUnavailableReason} />
                     <div className="thread-footer"><span className="status-dot status-dot--amber" /> Automatic replies are paused while channel handoff is verified.</div>
                   </>
                 ) : (

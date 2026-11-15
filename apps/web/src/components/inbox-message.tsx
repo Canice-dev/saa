@@ -1,17 +1,18 @@
 "use client";
 
-import { Check, CheckCheck, Copy } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { useState } from "react";
+import { Message, MessageAvatar, MessageContent, MessageFooter, MessageGroup } from "@/components/ui/message";
 
 type InboxMessageProps = {
   body: string;
+  avatarInitial: string;
   deliveryStatus: string | null;
   outgoing: boolean;
-  sender: string;
   time: string;
 };
 
-export function InboxMessage({ body, deliveryStatus, outgoing, sender, time }: InboxMessageProps) {
+export function InboxMessage({ body, avatarInitial, deliveryStatus, outgoing, time }: InboxMessageProps) {
   const [copied, setCopied] = useState(false);
 
   async function copyMessage() {
@@ -25,14 +26,26 @@ export function InboxMessage({ body, deliveryStatus, outgoing, sender, time }: I
   }
 
   return (
-    <article className={`message-bubble${outgoing ? " message-bubble--outgoing" : ""}`}>
-      <span className="message-sender">{sender}</span>
-      <p>{body}</p>
-      <span className="message-time">{time}{outgoing && deliveryStatus ? ` · ${deliveryStatus}` : ""}</span>
-      {outgoing && deliveryStatus && <CheckCheck className="message-check" size={13} aria-label={deliveryStatus} />}
-      <button className="message-copy-action" type="button" onClick={copyMessage} aria-label={copied ? "Message copied" : "Copy message"} title={copied ? "Copied" : "Copy message"}>
-        {copied ? <Check size={14} /> : <Copy size={14} />}
-      </button>
-    </article>
+    <MessageGroup className="message-row-group">
+      <Message align={outgoing ? "end" : "start"} className={`message-row${outgoing ? " message-row--outgoing" : ""}`}>
+        <MessageAvatar className="message-avatar" aria-hidden="true">{avatarInitial}</MessageAvatar>
+        <MessageContent className="message-row-content">
+          <article className={`message-bubble${outgoing ? " message-bubble--outgoing" : ""}`}>
+            <p>{body}</p>
+          </article>
+          <MessageFooter className={`message-time${outgoing ? " message-time--outgoing" : ""}`}>
+            <time>{time}</time>
+            {outgoing && deliveryStatus && (
+              <span className={`message-delivery-status${deliveryStatus === "failed" ? " message-delivery-status--failed" : ""}`}>
+                {deliveryStatus === "accepted" ? "Sending" : `${deliveryStatus[0].toUpperCase()}${deliveryStatus.slice(1)}`}
+              </span>
+            )}
+            <button className="message-copy-action" type="button" onClick={copyMessage} aria-label={copied ? "Message copied" : "Copy message"} title={copied ? "Copied" : "Copy message"}>
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+            </button>
+          </MessageFooter>
+        </MessageContent>
+      </Message>
+    </MessageGroup>
   );
 }
