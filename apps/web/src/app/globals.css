@@ -262,6 +262,11 @@ h1 { margin-bottom: 6px; color: var(--ink); font-size: clamp(28px, 2.5vw, 36px);
 .conversation-list-heading > div { display: flex; align-items: baseline; gap: 9px; }
 .conversation-list-heading h1 { margin: 0; color: var(--ink); font-size: 21px; font-weight: 650; letter-spacing: -.045em; }
 .conversation-list-heading > div > span { color: #737c77; font-size: 10px; }
+.inbox-filter-tabs { display: flex; flex: none; gap: 5px; padding: 0 12px 11px; border-bottom: 1px solid #f0f1f3; }
+.inbox-filter-tab { display: inline-flex; min-height: 29px; align-items: center; gap: 6px; padding: 0 10px; border-radius: 7px; color: #68716c; font-size: 10px; font-weight: 550; transition: color .15s, background .15s; }
+.inbox-filter-tab:hover { color: #303640; background: #f4f5f6; }
+.inbox-filter-tab--active { color: #303640; background: #eceef1; }
+.inbox-filter-tab > span { display: inline-flex; min-width: 17px; height: 17px; align-items: center; justify-content: center; padding: 0 4px; border-radius: 99px; color: #59616c; background: #fff; font-size: 9px; }
 .conversation-search { display: flex; height: 38px; flex: none; align-items: center; gap: 9px; margin: 0 12px 12px; padding: 0 11px; border: 0; border-radius: 8px; color: #737c77; background: #f1f3f5; }
 .conversation-search:focus-within { outline: 1px solid #cbd1d8; background: #fff; }
 .conversation-search input { width: 100%; min-width: 0; padding: 0; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 11px; }
@@ -276,8 +281,16 @@ h1 { margin-bottom: 6px; color: var(--ink); font-size: clamp(28px, 2.5vw, 36px);
 .conversation-item-top { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; }
 .conversation-item-top strong { overflow: hidden; color: #303640; font-size: 12px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
 .conversation-item-top time { flex: none; color: #737c77; font-size: 10px; }
+.conversation-item-copy--unread .conversation-item-top strong { color: #20262d; font-weight: 700; }
+.conversation-item-bottom { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 10px; }
 .conversation-item-preview { overflow: hidden; color: #65706a; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.conversation-item-copy--unread .conversation-item-preview { color: #3f4852; font-weight: 550; }
+.conversation-unread-badge { display: inline-flex; min-width: 18px; height: 18px; flex: none; align-items: center; justify-content: center; padding: 0 5px; border-radius: 99px; color: #fff; background: #2455ec; font-size: 9px; font-weight: 650; }
 .thread-header { display: flex; min-height: 68px; align-items: center; gap: 11px; padding: 11px 18px; border-bottom: 1px solid var(--line); background: #fff; }
+.thread-status-actions { display: flex; flex: none; align-items: center; }
+.thread-status-actions [data-slot="button"] { gap: 6px; font-size: 10px; }
+.thread-status-actions [data-slot="button"] svg { width: 14px; height: 14px; }
+.thread-status-error { margin-left: 6px; color: #a13b35; font-size: 9px; }
 .thread-back { display: none; }
 .thread-details-toggle { display: grid; width: 34px; height: 34px; flex: none; place-items: center; border: 0; border-radius: 50%; color: #626a76; background: transparent; cursor: pointer; }
 .thread-details-toggle:hover { background: #f0f1f4; }
@@ -479,6 +492,8 @@ h1 { margin-bottom: 6px; color: var(--ink); font-size: clamp(28px, 2.5vw, 36px);
   .conversation-search { margin: 0 12px 9px; }
   .conversation-item { min-height: 73px; padding-right: 16px; padding-left: 16px; }
   .thread-header { min-height: 62px; gap: 9px; padding: 8px 12px; }
+  .thread-status-label { display: none; }
+  .thread-status-actions [data-slot="button"] { width: 32px; min-width: 32px; padding: 0; }
   .thread-details-toggle { width: 32px; height: 32px; }
   .thread-back { display: grid; width: 32px; height: 36px; flex: none; place-items: center; margin-left: -5px; border-radius: 7px; color: #4f5863; }
   .thread-back:hover { background: #f0f1f4; }

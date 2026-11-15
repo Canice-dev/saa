@@ -2,6 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { getDatabase } from "@/lib/db/client";
 import { conversations, customers, messages } from "@/lib/db/schema";
 import { sendWhatsAppText, WhatsAppSendError } from "@/lib/integrations/meta/whatsapp-send";
+import { isSameOriginRequest } from "@/lib/http/same-origin";
 
 export const runtime = "nodejs";
 
@@ -11,27 +12,6 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3
 const MAX_REQUEST_BYTES = 12_000;
 
 type RouteContext = { params: Promise<{ conversationId: string }> };
-
-function isSameOriginRequest(request: Request): boolean {
-  const origin = request.headers.get("origin");
-  if (!origin) return false;
-
-  try {
-    const originUrl = new URL(origin);
-    const requestUrl = new URL(request.url);
-    const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0].trim();
-    const forwardedProtocol = request.headers.get("x-forwarded-proto")?.split(",")[0].trim();
-    const requestHost = forwardedHost || request.headers.get("host") || requestUrl.host;
-    const requestProtocol = forwardedProtocol || requestUrl.protocol.slice(0, -1);
-    const publicRequestOrigin = new URL(`${requestProtocol}://${requestHost}`).origin;
-    return (
-      originUrl.origin === publicRequestOrigin ||
-      request.headers.get("sec-fetch-site") === "same-origin"
-    );
-  } catch {
-    return false;
-  }
-}
 
 async function readRequestBody(request: Request): Promise<string | null> {
   if (!request.body) return "";

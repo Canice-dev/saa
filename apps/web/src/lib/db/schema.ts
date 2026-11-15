@@ -168,6 +168,7 @@ export const conversations = pgTable(
     lastSellerMessageAt: timestamp("last_seller_message_at", {
       withTimezone: true,
     }),
+    lastReadAt: timestamp("last_read_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`now()`)
       .notNull(),
