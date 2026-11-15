@@ -316,6 +316,36 @@ h1 { margin-bottom: 6px; color: var(--ink); font-size: clamp(28px, 2.5vw, 36px);
 .inbox-notice strong { color: #343b45; font-size: 12px; }
 .inbox-notice p { margin: 6px 0 0; color: #626a76; font-size: 11px; line-height: 1.5; }
 .inbox-page-content .page-footer { margin-top: 14px; }
+.orders-page-content { min-height: 100vh; }
+.orders-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 25px; }
+.orders-heading .date-kicker { margin-bottom: 7px; }
+.orders-heading h1 { margin-bottom: 7px; }
+.orders-count { display: inline-flex; align-items: center; gap: 8px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 8px; color: #626a76; background: #fff; font-size: 12px; }
+.orders-workspace { display: grid; min-height: min(660px, calc(100vh - 205px)); grid-template-columns: minmax(310px, .82fr) minmax(0, 1.35fr); overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.orders-list-panel { display: flex; min-width: 0; flex-direction: column; border-right: 1px solid var(--line); }
+.orders-list-heading { display: flex; min-height: 69px; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 17px; }
+.orders-list-heading h2 { margin: 0 0 3px; color: var(--ink); font-size: 15px; font-weight: 600; letter-spacing: -.02em; }
+.orders-list-heading span { color: #737c77; font-size: 11px; }
+.orders-list-heading button { color: #626a76; }
+.orders-tabs { display: flex; min-width: 0; gap: 15px; overflow-x: auto; padding: 0 17px; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+.orders-tabs::-webkit-scrollbar { display: none; }
+.orders-tab { display: inline-flex; min-height: 42px; flex: none; align-items: center; gap: 6px; padding: 0 1px; border: 0; border-bottom: 2px solid transparent; color: #737c77; background: transparent; font-size: 11px; cursor: pointer; }
+.orders-tab:hover { color: var(--ink); }
+.orders-tab--active { border-bottom-color: #343b45; color: #343b45; font-weight: 600; }
+.orders-tab-count { display: grid; min-width: 17px; height: 17px; place-items: center; padding: 0 4px; border-radius: 5px; color: #59616d; background: #eceef1; font-size: 9px; }
+.orders-search { display: flex; height: 37px; align-items: center; gap: 8px; margin: 13px 14px 4px; padding: 0 10px; border: 1px solid #e4e6ea; border-radius: 7px; color: #7b838e; background: #fff; }
+.orders-search input { width: 100%; min-width: 0; padding: 0; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 11px; }
+.orders-search input::placeholder { color: #858d98; }
+.orders-search input:disabled { cursor: not-allowed; }
+.orders-empty-list { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 35px 25px; text-align: center; }
+.orders-empty-icon, .orders-detail-icon { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid #e5e7eb; border-radius: 11px; color: #59616d; background: #f5f6f8; }
+.orders-empty-list h3 { margin: 13px 0 5px; color: #303640; font-size: 13px; font-weight: 600; }
+.orders-empty-list p { max-width: 250px; margin: 0; color: #737c87; font-size: 11px; line-height: 1.6; }
+.orders-detail-panel { display: grid; min-width: 0; place-items: center; padding: 30px; background: #fbfbfc; }
+.orders-detail-empty { display: flex; max-width: 330px; flex-direction: column; align-items: center; text-align: center; }
+.orders-detail-icon { width: 46px; height: 46px; margin-bottom: 15px; }
+.orders-detail-empty h2 { margin: 0 0 8px; color: #303640; font-size: 16px; font-weight: 600; letter-spacing: -.025em; }
+.orders-detail-empty p { margin: 0; color: #737c87; font-size: 12px; line-height: 1.65; }
 .customer-profile { display: flex; flex-direction: column; align-items: center; padding: 21px 14px 18px; border-bottom: 1px solid var(--line); text-align: center; }
 .customer-profile .customer-avatar { width: 52px; height: 52px; font-size: 16px; }
 .customer-profile strong { max-width: 100%; margin-top: 10px; overflow: hidden; color: var(--ink); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
@@ -355,6 +385,8 @@ h1 { margin-bottom: 6px; color: var(--ink); font-size: clamp(28px, 2.5vw, 36px);
   .content-grid { grid-template-columns: minmax(0, 1fr); }
   .activity-panel { min-height: 290px; }
   .inbox-page-content { padding: 0; }
+  .orders-workspace { min-height: min(630px, calc(100vh - 235px)); grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
+  .orders-tabs { gap: 11px; }
   .inbox-layout { min-height: 0; grid-template-columns: minmax(260px, .8fr) minmax(0, 1.5fr); overflow: hidden; }
   .conversation-list { min-height: 0; max-height: none; border-right: 1px solid var(--line); border-bottom: 0; }
   .conversation-thread { min-height: 0; }
@@ -388,6 +420,17 @@ h1 { margin-bottom: 6px; color: var(--ink); font-size: clamp(28px, 2.5vw, 36px);
   .mobile-menu-soon { margin-left: auto; color: #818893; font-size: 10px; }
   .mobile-menu-empty { margin: 9px; color: #737c77; font-size: 12px; }
   .page-content { padding: 24px 17px 22px; }
+  .orders-page-content { min-height: calc(100dvh - 58px); }
+  .orders-heading { align-items: flex-start; margin-bottom: 18px; }
+  .orders-heading .welcome-subtitle { max-width: 330px; font-size: 12px; }
+  .orders-count { gap: 6px; padding: 7px 8px; font-size: 10px; }
+  .orders-workspace { display: flex; min-height: calc(100dvh - 220px); overflow: visible; border: 0; background: transparent; }
+  .orders-list-panel { width: 100%; min-height: calc(100dvh - 220px); overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+  .orders-detail-panel { display: none; }
+  .orders-list-heading { min-height: 63px; padding: 12px 13px; }
+  .orders-tabs { gap: 13px; padding: 0 13px; }
+  .orders-tab { min-height: 40px; font-size: 10px; }
+  .orders-search { margin-right: 11px; margin-left: 11px; }
   .welcome-row { align-items: flex-start; flex-direction: column; gap: 15px; margin-bottom: 20px; }
   .welcome-row .primary-button { align-self: stretch; }
   h1 { font-size: 30px; }
