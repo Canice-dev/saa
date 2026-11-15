@@ -143,10 +143,10 @@ export async function POST(request: Request, { params }: RouteContext) {
 
     return Response.json({ sent: true }, { status: 201 });
   } catch (error) {
-    console.error(
-      "WhatsApp seller reply failed",
-      error instanceof Error ? error.name : "UnknownError",
-    );
+    console.error("WhatsApp seller reply failed", {
+      errorType: error instanceof Error ? error.name : "UnknownError",
+      ...(error instanceof WhatsAppSendError ? { provider: error.diagnostics } : {}),
+    });
     return Response.json(
       { error: error instanceof WhatsAppSendError
         ? "WhatsApp could not confirm the message. Check the thread before retrying."

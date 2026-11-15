@@ -2,7 +2,7 @@ import "dotenv/config";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { getDatabase } from "@/lib/db/client";
 import { businessSettings, conversations, customers, messages, outboxEvents } from "@/lib/db/schema";
-import { sendWhatsAppText } from "@/lib/integrations/meta/whatsapp-send";
+import { sendWhatsAppText, WhatsAppSendError } from "@/lib/integrations/meta/whatsapp-send";
 
 const POLL_INTERVAL_MS = 3_000;
 const JOB_LEASE_SECONDS = 120;
@@ -94,6 +94,7 @@ async function retryJob(job: ClaimedReplyJob, error: unknown) {
     attempt: job.attempts,
     final: failedPermanently,
     errorType: error instanceof Error ? error.name : "UnknownError",
+    ...(error instanceof WhatsAppSendError ? { provider: error.diagnostics } : {}),
   });
 }
 
