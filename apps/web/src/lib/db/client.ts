@@ -1,5 +1,7 @@
 import { drizzle } from "drizzle-orm/neon-http";
 
+export { and, asc, desc, eq, sql } from "drizzle-orm";
+
 function createDatabase() {
   const connectionString = process.env.DATABASE_URL;
 

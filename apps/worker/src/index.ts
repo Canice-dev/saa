@@ -1,15 +1,29 @@
 import "dotenv/config";
-import { and, desc, eq, sql } from "drizzle-orm";
-import { getDatabase } from "@/lib/db/client";
-import { businessSettings, conversations, customers, messages, outboxEvents } from "@/lib/db/schema";
-import { sendWhatsAppText, WhatsAppSendError } from "@/lib/integrations/meta/whatsapp-send";
+import { and, desc, eq, getDatabase, sql } from "../../web/src/lib/db/client.js";
+import {
+  businessSettings,
+  conversations,
+  customers,
+  messages,
+  outboxEvents,
+} from "../../web/src/lib/db/schema.js";
+import {
+  sendWhatsAppText,
+  WhatsAppSendError,
+} from "../../web/src/lib/integrations/meta/whatsapp-send.js";
+import {
+  createCustomerReply,
+  summarizeAIError,
+  type ReplyTurn,
+} from "./ai.js";
+import { findRelevantProducts, indexPendingProducts } from "./catalog.js";
 
 const POLL_INTERVAL_MS = 3_000;
+const INDEX_INTERVAL_MS = 12_000;
 const JOB_LEASE_SECONDS = 120;
 const MAX_ATTEMPTS = 5;
 const MAX_RETRY_DELAY_SECONDS = 300;
 const CUSTOMER_SERVICE_WINDOW_MS = 24 * 60 * 60 * 1000;
-const REPLY_TEXT = "Hello Sales Assistant, how can I help today?";
 
 type ClaimedReplyJob = {
   id: string;
@@ -29,8 +43,16 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function parseReplyPayload(value: unknown): ReplyPayload | null {
   if (!isObject(value)) return null;
-  if (typeof value.inboundMessageId !== "string" || typeof value.generation !== "number") return null;
-  return { inboundMessageId: value.inboundMessageId, generation: value.generation };
+  if (
+    typeof value.inboundMessageId !== "string" ||
+    typeof value.generation !== "number"
+  ) {
+    return null;
+  }
+  return {
+    inboundMessageId: value.inboundMessageId,
+    generation: value.generation,
+  };
 }
 
 async function claimNextJob(): Promise<ClaimedReplyJob | undefined> {
@@ -77,15 +99,20 @@ async function completeJob(jobId: string) {
 
 async function retryJob(job: ClaimedReplyJob, error: unknown) {
   const failedPermanently = job.attempts >= MAX_ATTEMPTS;
-  const retryDelaySeconds = Math.min(15 * 2 ** Math.max(0, job.attempts - 1), MAX_RETRY_DELAY_SECONDS);
+  const retryDelaySeconds = Math.min(
+    15 * 2 ** Math.max(0, job.attempts - 1),
+    MAX_RETRY_DELAY_SECONDS,
+  );
+  const now = new Date();
+
   await getDatabase()
     .update(outboxEvents)
     .set({
       status: failedPermanently ? "failed" : "pending",
       availableAt: failedPermanently
-        ? new Date()
-        : new Date(Date.now() + retryDelaySeconds * 1000),
-      processedAt: failedPermanently ? new Date() : null,
+        ? now
+        : new Date(now.getTime() + retryDelaySeconds * 1000),
+      processedAt: failedPermanently ? now : null,
     })
     .where(eq(outboxEvents.id, job.id));
 
@@ -93,8 +120,10 @@ async function retryJob(job: ClaimedReplyJob, error: unknown) {
     jobId: job.id,
     attempt: job.attempts,
     final: failedPermanently,
-    errorType: error instanceof Error ? error.name : "UnknownError",
-    ...(error instanceof WhatsAppSendError ? { provider: error.diagnostics } : {}),
+    error: summarizeAIError(error),
+    ...(error instanceof WhatsAppSendError
+      ? { provider: error.diagnostics }
+      : {}),
   });
 }
 
@@ -106,7 +135,8 @@ async function processJob(job: ClaimedReplyJob) {
     return;
   }
 
-  const [conversation] = await getDatabase()
+  const db = getDatabase();
+  const [conversation] = await db
     .select({
       id: conversations.id,
       channel: conversations.channel,
@@ -118,8 +148,16 @@ async function processJob(job: ClaimedReplyJob) {
     })
     .from(conversations)
     .innerJoin(customers, eq(customers.id, conversations.customerId))
-    .innerJoin(businessSettings, eq(businessSettings.businessId, conversations.businessId))
-    .where(and(eq(conversations.id, job.aggregate_id), eq(conversations.businessId, 1)))
+    .innerJoin(
+      businessSettings,
+      eq(businessSettings.businessId, conversations.businessId),
+    )
+    .where(
+      and(
+        eq(conversations.id, job.aggregate_id),
+        eq(conversations.businessId, 1),
+      ),
+    )
     .limit(1);
 
   if (
@@ -134,14 +172,21 @@ async function processJob(job: ClaimedReplyJob) {
     return;
   }
 
-  const [latestInbound] = await getDatabase()
+  const [latestInbound] = await db
     .select({
       id: messages.id,
+      body: messages.body,
+      messageType: messages.messageType,
       receivedAt: messages.receivedAt,
       providerTimestamp: messages.providerTimestamp,
     })
     .from(messages)
-    .where(and(eq(messages.conversationId, conversation.id), eq(messages.direction, "inbound")))
+    .where(
+      and(
+        eq(messages.conversationId, conversation.id),
+        eq(messages.direction, "inbound"),
+      ),
+    )
     .orderBy(desc(messages.receivedAt))
     .limit(1);
 
@@ -150,27 +195,71 @@ async function processJob(job: ClaimedReplyJob) {
     return;
   }
 
-  const inboundTime = latestInbound.providerTimestamp ?? latestInbound.receivedAt;
+  const inboundTime =
+    latestInbound.providerTimestamp ?? latestInbound.receivedAt;
   const inboundAge = Date.now() - inboundTime.getTime();
-  if (inboundAge < 0 || inboundAge >= CUSTOMER_SERVICE_WINDOW_MS) {
+  if (
+    inboundAge < 0 ||
+    inboundAge >= CUSTOMER_SERVICE_WINDOW_MS ||
+    latestInbound.messageType === "reaction" ||
+    !latestInbound.body?.trim()
+  ) {
     await completeJob(job.id);
     return;
   }
 
-  const [latestOutbound] = await getDatabase()
+  const [latestOutbound] = await db
     .select({ receivedAt: messages.receivedAt })
     .from(messages)
-    .where(and(eq(messages.conversationId, conversation.id), eq(messages.direction, "outbound")))
+    .where(
+      and(
+        eq(messages.conversationId, conversation.id),
+        eq(messages.direction, "outbound"),
+      ),
+    )
     .orderBy(desc(messages.receivedAt))
     .limit(1);
 
-  if (latestOutbound && latestOutbound.receivedAt.getTime() > latestInbound.receivedAt.getTime()) {
+  if (
+    latestOutbound &&
+    latestOutbound.receivedAt.getTime() > latestInbound.receivedAt.getTime()
+  ) {
     await completeJob(job.id);
     return;
   }
 
-  const providerMessageId = await sendWhatsAppText(conversation.recipientId, REPLY_TEXT);
-  await getDatabase()
+  const recentMessages = await db
+    .select({
+      senderRole: messages.senderRole,
+      body: messages.body,
+      messageType: messages.messageType,
+    })
+    .from(messages)
+    .where(eq(messages.conversationId, conversation.id))
+    .orderBy(desc(messages.receivedAt))
+    .limit(12);
+
+  const turns: ReplyTurn[] = [];
+  for (const message of recentMessages.reverse()) {
+    if (!message.body?.trim() || message.messageType === "reaction") continue;
+    if (message.senderRole === "customer") {
+      turns.push({ role: "user", content: message.body });
+    } else if (
+      message.senderRole === "seller" ||
+      message.senderRole === "assistant"
+    ) {
+      turns.push({ role: "assistant", content: message.body });
+    }
+  }
+
+  const productFacts = await findRelevantProducts(latestInbound.body);
+  const reply = await createCustomerReply(turns, productFacts);
+  const providerMessageId = await sendWhatsAppText(
+    conversation.recipientId,
+    reply,
+  );
+
+  await db
     .insert(messages)
     .values({
       conversationId: conversation.id,
@@ -179,30 +268,32 @@ async function processJob(job: ClaimedReplyJob) {
       senderRole: "assistant",
       direction: "outbound",
       messageType: "text",
-      body: REPLY_TEXT,
+      body: reply,
       providerTimestamp: new Date(),
       deliveryStatus: "accepted",
     })
     .onConflictDoNothing();
 
-  await getDatabase()
+  await db
     .update(conversations)
     .set({ updatedAt: new Date() })
     .where(eq(conversations.id, conversation.id));
   await completeJob(job.id);
-  console.info("AI worker sent a reply", job.id);
+  console.info("AI worker sent a model-generated reply", job.id);
 }
 
-const sleep = (durationMs: number) => new Promise((resolve) => setTimeout(resolve, durationMs));
+const sleep = (durationMs: number) =>
+  new Promise((resolve) => setTimeout(resolve, durationMs));
 let stopping = false;
 
-process.once("SIGINT", () => { stopping = true; });
-process.once("SIGTERM", () => { stopping = true; });
+process.once("SIGINT", () => {
+  stopping = true;
+});
+process.once("SIGTERM", () => {
+  stopping = true;
+});
 
-async function main() {
-  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not configured");
-
-  console.info("Inbox reply worker started. It will only send when automation is enabled.");
+async function runReplyQueue() {
   while (!stopping) {
     try {
       const job = await claimNextJob();
@@ -217,15 +308,53 @@ async function main() {
         await retryJob(job, error);
       }
     } catch (error) {
-      console.error("AI worker could not poll the outbox", error instanceof Error ? error.name : "UnknownError");
+      console.error(
+        "AI worker could not poll the outbox",
+        summarizeAIError(error),
+      );
       await sleep(POLL_INTERVAL_MS);
     }
   }
-
-  console.info("Inbox reply worker stopped.");
 }
 
-void main().catch((error) => {
-  console.error("Inbox reply worker failed to start", error instanceof Error ? error.name : "UnknownError");
+async function runCatalogIndexer() {
+  while (!stopping) {
+    try {
+      const indexed = await indexPendingProducts();
+      await sleep(indexed > 0 ? 500 : INDEX_INTERVAL_MS);
+    } catch (error) {
+      console.error(
+        "AI worker could not index catalog products",
+        summarizeAIError(error),
+      );
+      await sleep(INDEX_INTERVAL_MS);
+    }
+  }
+}
+
+async function main() {
+  const requiredSettings = [
+    "DATABASE_URL",
+    "OPENAI_API_KEY",
+    "WHATSAPP_PHONE_NUMBER_ID",
+    "WHATSAPP_ACCESS_TOKEN",
+  ];
+  const missingSettings = requiredSettings.filter((name) => !process.env[name]);
+  if (missingSettings.length > 0) {
+    throw new Error(`Missing worker settings: ${missingSettings.join(", ")}`);
+  }
+
+  console.info(
+    `Inbox AI worker started with OpenAI model ${process.env.OPENAI_CHAT_MODEL ?? "gpt-6-luna"}. Automation must be enabled to send replies.`,
+  );
+  await Promise.all([runReplyQueue(), runCatalogIndexer()]);
+  console.info("Inbox AI worker stopped.");
+}
+
+void main().catch((error: unknown) => {
+  console.error(
+    "Inbox AI worker failed to start",
+    error instanceof Error ? error.message : "UnknownError",
+  );
   process.exitCode = 1;
 });

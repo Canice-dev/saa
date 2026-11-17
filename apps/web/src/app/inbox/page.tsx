@@ -33,6 +33,12 @@ function formatTime(value: Date | string | null, withDate = false) {
   }).format(date);
 }
 
+function timestampMs(value: Date | string | null | undefined) {
+  if (value == null) return null;
+  const timestamp = value instanceof Date ? value.getTime() : Date.parse(value);
+  return Number.isNaN(timestamp) ? null : timestamp;
+}
+
 function previewText(body: string | null, messageType: string | null) {
   if (body) return body;
   if (!messageType) return "No messages yet";
@@ -41,7 +47,8 @@ function previewText(body: string | null, messageType: string | null) {
 }
 
 function initials(name: string | null, fallback: string) {
-  return (name?.trim() || fallback).slice(0, 1).toUpperCase();
+  const firstCharacter = Array.from((name?.trim() || fallback).normalize("NFC"))[0];
+  return firstCharacter?.toUpperCase() ?? "?";
 }
 
 function inboxFilterHref(status: string, searchQuery: string) {
@@ -173,9 +180,9 @@ export default async function InboxPage({
     senderRole: string;
     messageType: string;
     body: string | null;
-    createdAt: Date;
+    createdAt: Date | string;
     deliveryStatus: string | null;
-    databaseNow: Date;
+    databaseNow: Date | string;
   }[] = [];
   let threadError = false;
 
@@ -187,9 +194,9 @@ export default async function InboxPage({
           senderRole: messages.senderRole,
           messageType: messages.messageType,
           body: messages.body,
-          createdAt: sql<Date>`coalesce(${messages.providerTimestamp}, ${messages.receivedAt})`,
+          createdAt: sql<Date | string>`coalesce(${messages.providerTimestamp}, ${messages.receivedAt})`,
           deliveryStatus: messages.deliveryStatus,
-          databaseNow: sql<Date>`now()`,
+          databaseNow: sql<Date | string>`now()`,
         })
         .from(messages)
         .where(eq(messages.conversationId, activeConversation.id))
@@ -203,10 +210,8 @@ export default async function InboxPage({
   const mostRecentCustomerMessage = [...thread]
     .reverse()
     .find((message) => message.senderRole === "customer");
-  const lastCustomerMessageAt = mostRecentCustomerMessage?.createdAt
-    ? new Date(mostRecentCustomerMessage.createdAt).getTime()
-    : null;
-  const now = thread[0]?.databaseNow.getTime() ?? null;
+  const lastCustomerMessageAt = timestampMs(mostRecentCustomerMessage?.createdAt);
+  const now = timestampMs(thread[0]?.databaseNow);
   const replyWindowOpen =
     lastCustomerMessageAt !== null &&
     now !== null &&

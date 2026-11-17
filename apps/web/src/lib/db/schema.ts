@@ -14,6 +14,7 @@ import {
   primaryKey,
   unique,
   check,
+  vector,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -333,6 +334,8 @@ export const products = pgTable(
     currency: char({ length: 3 }).default("NGN").notNull(),
     stockQuantity: integer("stock_quantity").default(0).notNull(),
     searchTerms: text("search_terms"),
+    embedding: vector("embedding", { dimensions: 1024 }),
+    embeddingUpdatedAt: timestamp("embedding_updated_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`now()`)
       .notNull(),
